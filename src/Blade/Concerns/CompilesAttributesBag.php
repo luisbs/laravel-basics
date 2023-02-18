@@ -25,7 +25,7 @@ trait CompilesAttributesBag
      */
     protected function compileWrapBag($expression)
     {
-        return "<?php \$attributes = \Basics\Blade\Concerns::wrapBag(\$attributes) ?>";
+        return "<?php \$attributes = \Basics\Blade\Concerns::wrapBag(\$attributes ?? []) ?>";
     }
 
     /**
@@ -40,7 +40,7 @@ trait CompilesAttributesBag
             return "<?php \$attributes = \Basics\Blade\Concerns::mergeBags($expression) ?>";
         }
 
-        return "<?php \$attributes = \Basics\Blade\Concerns::mergeBags(\$attributes, $expression) ?>";
+        return "<?php \$attributes = \Basics\Blade\Concerns::mergeBags(\$attributes ?? [], $expression) ?>";
     }
 
     /**
@@ -136,5 +136,39 @@ trait CompilesAttributesBag
             default:
                 return (string) $data;
         }
+    }
+
+    /**
+     * Compile the prop statement into valid PHP.
+     *
+     * This is the original Laravel@7 implementation, is copied hear to take example
+     * @see https://github.com/illuminate/view/blob/7.x/Compilers/Concerns/CompilesComponents.php#L150
+     * @deprecated
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileOgProps($expression)
+    {
+        return implode('\n', [
+            // actualiza `$attributes` y omite las variables que que estamos instanciando
+            "<?php \$attributes = \$attributes->exceptProps{$expression}; ?>",
+
+            // instancia las `@props` que tienen valores por defecto
+            "<?php foreach (array_filter({$expression}, 'is_string', ARRAY_FILTER_USE_KEY) as \$__key => \$__value) {",
+            "    \$\$__key = \$\$__key ?? \$__value;",
+            '} ?>',
+
+            // obtiene las variables qe estan definidas en el contexto actual
+            "<?php \$__defined_vars = get_defined_vars(); ?>",
+
+            // recorre las variables que quedaron en `$attributes`
+            // limpia el contexto actual de las variables que estan en `$attributes`
+            "<?php foreach (\$attributes as \$__key => \$__value) {",
+            "    if (array_key_exists(\$__key, \$__defined_vars)) unset(\$\$__key);",
+            '} ?>',
+
+            "<?php unset(\$__defined_vars); ?>",
+        ]);
     }
 }
