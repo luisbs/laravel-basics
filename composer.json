@@ -1,0 +1,29 @@
+{
+  "name": "luisbs/laravel-basics",
+  "type": "library",
+  "description": "Basic utility code for working with laravel",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Luis Brayan",
+      "email": "luis.bs.9004@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Basics\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        ""
+      ]
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "require": {
+    "laravel/framework": "^7.0"
+  }
+}
