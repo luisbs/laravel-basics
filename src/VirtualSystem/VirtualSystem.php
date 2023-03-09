@@ -11,7 +11,7 @@ trait VirtualSystem
     public static function addMissingResources(self $parent, string $resourceType, array $resourcesIds): void
     {
         foreach ($resourcesIds as $resourceId) {
-            self::firstOrCreate([
+            static::firstOrCreate([
                 'owner_email' => $parent->owner_id,
                 'resource_id' => $resourceId,
                 'type'        => $resourceType,
@@ -25,10 +25,10 @@ trait VirtualSystem
      */
     public static function getRootFolder($ownerId, string $resourceType): self
     {
-        $folderName = self::getRootFolderName($resourceType);
+        $folderName = static::getRootFolderName($resourceType);
 
         // look for the folder
-        $folder = self::ownedBy($ownerId) //
+        $folder = static::ownedBy($ownerId) //
             ->where([['parent_id', null], ['name', $folderName]])
             ->first();
 
@@ -55,7 +55,7 @@ trait VirtualSystem
      */
     public static function createFolder($ownerId, $parentId, string $name): self
     {
-        $folder = new self([
+        $folder = new static([
             'owner_id' => $ownerId,
             'parent_id' => $parentId,
             'name' => $name,
@@ -71,7 +71,7 @@ trait VirtualSystem
      */
     public static function createFile(self $parent, string $resourceType, string $resourceId): self
     {
-        $file = new self([
+        $file = new static([
             'owner_id' => $parent->owner_id,
             'parent_id' => $parent->id,
             'resource_id' => $resourceId,

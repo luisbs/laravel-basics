@@ -64,7 +64,7 @@ abstract class VirtualElement extends Model
      */
     public function parent()
     {
-        return $this->belongsTo(self::class, 'parent_id');
+        return $this->belongsTo(static::class, 'parent_id');
     }
 
     /**
@@ -74,7 +74,7 @@ abstract class VirtualElement extends Model
      */
     public function content()
     {
-        return $this->hasMany(self::class, 'parent_id');
+        return $this->hasMany(static::class, 'parent_id');
     }
 
     /**
