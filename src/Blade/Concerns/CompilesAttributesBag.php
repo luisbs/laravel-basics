@@ -25,7 +25,7 @@ trait CompilesAttributesBag
      */
     protected function compileWrapBag($expression)
     {
-        return "<?php \$attributes = \Basics\Blade\Concerns::wrapBag(\$attributes ?? []) ?>";
+        return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::wrapBag(\$attributes ?? []) ?>";
     }
 
     /**
@@ -37,10 +37,10 @@ trait CompilesAttributesBag
     protected function compileMergeIntoBag($expression)
     {
         if (mb_strpos($expression, '$attributes') !== false) {
-            return "<?php \$attributes = \Basics\Blade\Concerns::mergeBags($expression) ?>";
+            return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::mergeBags($expression) ?>";
         }
 
-        return "<?php \$attributes = \Basics\Blade\Concerns::mergeBags(\$attributes ?? [], $expression) ?>";
+        return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::mergeBags(\$attributes ?? [], $expression) ?>";
     }
 
     /**
