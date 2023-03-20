@@ -41,7 +41,7 @@ class AttributesBagSupport
         foreach ($bags as $bag) {
             if ($bag instanceof ComponentAttributeBag) {
                 $attributes = $attributes->merge($bag->getAttributes());
-            if ($bag instanceof BaseComponentAttributeBag) {
+            } else if ($bag instanceof BaseComponentAttributeBag) {
                 $attributes = $attributes->merge((array) $bag);
             } else {
                 $attributes = $attributes->merge(Arr::wrap($bag));
