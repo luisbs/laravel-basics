@@ -25,7 +25,7 @@ trait CompilesAttributesBag
      */
     protected function compileWrapBag($expression)
     {
-        return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::wrapBag(\$attributes ?? []) ?>";
+        return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::wrapBag(\$attributes ?? []); ?>";
     }
 
     /**
@@ -37,10 +37,38 @@ trait CompilesAttributesBag
     protected function compileMergeIntoBag($expression)
     {
         if (mb_strpos($expression, '$attributes') !== false) {
-            return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::mergeBags($expression) ?>";
+            return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::mergeBags($expression); ?>";
         }
 
-        return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::mergeBags(\$attributes ?? [], $expression) ?>";
+        return "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::mergeBags(\$attributes ?? [], $expression); ?>";
+    }
+
+    /**
+     * Compile the mergeBagAttribute statement into valid PHP.
+     *
+     * @param  string  $expression
+     * @return string
+     */
+    protected function compileMergeBagAttribute($expression)
+    {
+        $keys = '[' . trim($expression, '[]') . ']';
+
+        // the idea to use this statement is to pull a prop from `$attributes`
+        // then merge the pulled prop into `$attributes`
+        return implode("\n", [
+            // set the keys to flat
+            "<?php \$__heap = []; \$__keys = {$keys}; ?>",
+            // extract values from the $attributes
+            "<?php foreach (\$attributes->only(\$__keys) as \$__values) {",
+            "    \$__heap[] = \$__values;",
+            '} ?>',
+            // exclude props from the $attributes
+            "<?php \$attributes = \$attributes->exceptProps(\$__keys); ?>",
+            // merge values into $attributes
+            "<?php \$attributes = \Basics\Blade\Concerns\AttributesBagSupport::mergeBags(\$attributes, ...\$__heap); ?>",
+            // clean context
+            "<?php unset(\$__heap, \$__keys, \$__values); ?>",
+        ]);
     }
 
     /**

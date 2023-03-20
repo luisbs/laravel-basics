@@ -17,12 +17,13 @@ class BladeServiceProvider extends ServiceProvider
      * @var array
      */
     protected $directives = [
-        'dumpVars',
+        // 'dumpVars',
 
         'setOnBag',
-        'wrapBag',
-        'mergeIntoBag',
-        'propsFromBag',
+        // 'wrapBag',
+        // 'mergeIntoBag',
+        // 'mergeBagAttribute',
+        // 'propsFromBag',
     ];
 
     /**
