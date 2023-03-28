@@ -9,33 +9,42 @@ trait GateAliasedPolicies
     /**
      * Define the prefix use to call aliased policies actions.
      */
-    protected string $aliasPrefix = 'aliased_';
+    protected function getAliasPrefix()
+    {
+        return 'aliased_';
+    }
 
     /**
      * List the aliased policy actions.
      */
-    protected array $aliasedActions = [
-        'view', //
-        'create',
-        'update',
-        'delete',
-    ];
+    protected function getAliasedActions()
+    {
+        return [
+            'view',
+            'create',
+            'update',
+            'delete',
+        ];
+    }
 
     /**
      * List the aliased model policies.
      */
-    protected array $aliasedPolicies = [
-        //
-    ];
+    protected function getAliasedPolicies()
+    {
+        return [];
+    }
 
     /**
      * Append the aliased policies to the gate facade.
      */
     protected function defineAliasedPolicies()
     {
-        foreach ($this->aliasedActions as $alias => $policy) {
-            foreach ($this->aliasedActions as $action) {
-                Gate::define($action . '-' . $alias, [$policy, $this->aliasPrefix . $action]);
+        $prefix = $this->getAliasPrefix();
+        $actions = $this->getAliasedActions();
+        foreach ($this->getAliasedPolicies() as $alias => $policy) {
+            foreach ($actions as $action) {
+                Gate::define($action . '-' . $alias, [$policy, $prefix . $action]);
             }
         }
     }
