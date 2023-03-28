@@ -9,12 +9,12 @@ trait GateAliasedPolicies
     /**
      * Define the prefix use to call aliased policies actions.
      */
-    protected $aliasPrefix = 'aliased_';
+    protected string $aliasPrefix = 'aliased_';
 
     /**
      * List the aliased policy actions.
      */
-    protected $aliasedActions = [
+    protected array $aliasedActions = [
         'view', //
         'create',
         'update',
@@ -24,7 +24,7 @@ trait GateAliasedPolicies
     /**
      * List the aliased model policies.
      */
-    protected $aliasedPolicies = [
+    protected array $aliasedPolicies = [
         //
     ];
 
