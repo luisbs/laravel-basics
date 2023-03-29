@@ -10,21 +10,16 @@ class AdvanceSchema extends Schema
 {
     /**
      * Truncate a table values.
-     *
-     * @param  string  $table
      */
-    public static function truncate(string $table)
+    public static function truncate(string $table): void
     {
         DB::table($table)->truncate();
     }
 
     /**
      * Creates a table if it doesn't exists.
-     *
-     * @param  string  $table
-     * @param  \Closure  $callback
      */
-    public static function createTableIfNotExists(string $table, \Closure $callback)
+    public static function createTableIfNotExists(string $table, \Closure $callback): void
     {
         if (!Schema::hasTable($table)) {
             Schema::create($table, $callback);
@@ -33,15 +28,26 @@ class AdvanceSchema extends Schema
 
     /**
      * Renames a single column on a table.
-     *
-     * @param  string  $table
-     * @param  string  $from
-     * @param  string  $to
      */
-    public static function renameColumn(string $table, string $from, string $to)
+    public static function renameColumn(string $table, string $from, string $to): void
     {
         Schema::table($table, function (Blueprint $blueprint) use ($from, $to) {
             $blueprint->renameColumn($from, $to);
+        });
+    }
+
+    /**
+     * Drops an index and a column if it exists.
+     */
+    public static function dropColumnIfExists(string $table, string $column): void
+    {
+        if (!Schema::hasColumn($table, $column)) {
+            return;
+        }
+
+        Schema::table($table, function (Blueprint $blueprint) use ($table, $column) {
+            $blueprint->dropIndex([$column]);
+            $blueprint->dropColumn($column);
         });
     }
 
@@ -50,25 +56,16 @@ class AdvanceSchema extends Schema
      * to use another column as primary column
      * and renames the new primary column
      * with the name of the original.
-     *
-     * @param  string  $table
-     * @param  string  $currentKeyColumnName
-     * @param  string  $newKeysColumnName
      */
     public static function replacePrimaryColumn(
         string $table,
         string $currentKeyColumnName,
         string $newKeysColumnName
-    ) {
+    ): void {
         static::throwIfColumnNotExists($table, $newKeysColumnName);
 
         // drop previous primary column
-        if (Schema::hasColumn($table, $currentKeyColumnName)) {
-            Schema::table($table, function (Blueprint $blueprint) use ($table, $currentKeyColumnName) {
-                $blueprint->dropIndex("{$table}_{$currentKeyColumnName}_index");
-                $blueprint->dropColumn($currentKeyColumnName);
-            });
-        }
+        self::dropColumnIfExists($table, $currentKeyColumnName);
 
         // set new primary column
         Schema::table($table, function (Blueprint $blueprint) use (
@@ -85,11 +82,9 @@ class AdvanceSchema extends Schema
     /**
      * Throws an exception if a column doesn't exists in the table.
      *
-     * @param  string  $table
-     * @param  string  $column
      * @throws \Exception
      */
-    protected static function throwIfColumnNotExists(string $table, string $column)
+    protected static function throwIfColumnNotExists(string $table, string $column): void
     {
         if (!Schema::hasColumn($table, $column)) {
             throw new \Exception("Column '{$table}'.'{$column}' doesn't exists.");
