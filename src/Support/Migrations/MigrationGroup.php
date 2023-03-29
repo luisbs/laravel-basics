@@ -33,7 +33,7 @@ class MigrationGroup extends Migration
         foreach ($this->migrations as $cls) {
             $output->writeln("Running {$cls}->up()");
             (new $cls())->up();
-            $output->writeln("Done {$cls}->up()");
+            $output->writeln("Done {$cls}");
         }
     }
 
@@ -54,7 +54,7 @@ class MigrationGroup extends Migration
         foreach (array_reverse($this->migrations) as $cls) {
             $output->writeln("Running {$cls}->down()");
             (new $cls())->down();
-            $output->writeln("Done {$cls}->down()");
+            $output->writeln("Done {$cls}");
         }
     }
 }
