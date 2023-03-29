@@ -14,7 +14,7 @@ class MigrationGroup extends Migration
      *
      * @var array
      */
-    public static $migrations = [];
+    protected $migrations = [];
 
     /**
      * Run the migrations.
