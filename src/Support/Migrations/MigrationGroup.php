@@ -25,6 +25,11 @@ class MigrationGroup extends Migration
     public function up()
     {
         $output = new ConsoleOutput();
+
+        if (count($this->migrations) < 1) {
+            throw new \Exception('migrations array on is ' . self::class . ' empty');
+        }
+
         foreach ($this->migrations as $cls) {
             $output->writeln("Running {$cls}->up()");
             (new $cls())->up();
@@ -39,8 +44,13 @@ class MigrationGroup extends Migration
      */
     public function down()
     {
-        // runs on reverse to prevent order problems
         $output = new ConsoleOutput();
+
+        if (count($this->migrations) < 1) {
+            throw new \Exception('migrations array on is ' . self::class . ' empty');
+        }
+
+        // runs on reverse to prevent order problems
         foreach (array_reverse($this->migrations) as $cls) {
             $output->writeln("Running {$cls}->down()");
             (new $cls())->down();
