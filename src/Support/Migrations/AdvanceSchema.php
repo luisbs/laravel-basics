@@ -70,21 +70,18 @@ class AdvanceSchema extends Schema
     }
 
     /**
-     * Adds an uuid column into a table if not exists.
+     * Adds an uuid column into a table if not exists;
+     * If the column already exists ensure each row has a value assigned.
      */
     public static function addMissingUuidColumn(string $table, string $column = 'uuid', string $keyColumn = 'id'): void
     {
-        if (Schema::hasColumn($table, $column)) {
-            return;
-        }
-
         // create column as nullable
-        Schema::table($table, function (Blueprint $table) use ($column, $keyColumn) {
+        self::addMissingColumn($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
             $table->uuid($column)->after($keyColumn)->nullable(true);
         });
 
         // add values on the column
-        foreach (DB::table($table)->get() as $entry) {
+        foreach (DB::table($table)->where($column, null)->get() as $entry) {
             DB::table($table)
                 ->where($keyColumn, $entry->{$keyColumn})
                 ->update([$column => Str::uuid()->toString()]);
