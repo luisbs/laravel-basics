@@ -5,6 +5,7 @@ namespace Basics\Support\Migrations;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class AdvanceSchema extends Schema
 {
@@ -19,14 +20,17 @@ class AdvanceSchema extends Schema
     /**
      * Creates a table if it doesn't exists.
      */
-    public static function createTableIfNotExists(string $table, \Closure $callback): void
+    public static function createMissingTable(string $table, \Closure $callback): void
     {
         if (!Schema::hasTable($table)) {
             Schema::create($table, $callback);
         }
     }
 
-    public static function addColumnIfNotExists($table, $column, \Closure $callback): void
+    /**
+     * Adds a column to a table if it doesn't exists.
+     */
+    public static function addMissingColumn($table, $column, \Closure $callback): void
     {
         if (Schema::hasColumn($table, $column)) {
             return;
@@ -38,7 +42,7 @@ class AdvanceSchema extends Schema
     /**
      * Renames a single column on a table.
      */
-    public static function renameColumnIfExists(string $table, string $from, string $to): void
+    public static function renameExistingColumn(string $table, string $from, string $to): void
     {
         if (!Schema::hasColumn($table, $from)) {
             return;
@@ -52,7 +56,7 @@ class AdvanceSchema extends Schema
     /**
      * Drops an index and a column if it exists.
      */
-    public static function dropColumnIfExists(string $table, string $column): void
+    public static function dropExistingColumn(string $table, string $column): void
     {
         if (!Schema::hasColumn($table, $column)) {
             return;
@@ -61,6 +65,33 @@ class AdvanceSchema extends Schema
         Schema::table($table, function (Blueprint $blueprint) use ($table, $column) {
             $blueprint->dropIndex([$column]);
             $blueprint->dropColumn($column);
+        });
+    }
+
+    /**
+     * Adds an uuid column into a table if not exists.
+     */
+    public static function addMissingUuidColumn(string $table, string $column = 'uuid', string $keyColumn = 'id'): void
+    {
+        if (Schema::hasColumn($table, $column)) {
+            return;
+        }
+
+        // create column as nullable
+        Schema::table($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
+            $table->uuid($column)->after($keyColumn)->nullable(true);
+        });
+
+        // add values on the column
+        foreach (DB::table($table) as $entry) {
+            DB::table($table)
+                ->where($keyColumn, $entry->{$keyColumn})
+                ->update([$column => Str::uuid()->toString()]);
+        }
+
+        // change the column to non-nullable
+        Schema::table($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
+            $table->uuid($column)->nullable(false)->change();
         });
     }
 
@@ -78,7 +109,7 @@ class AdvanceSchema extends Schema
         static::throwIfColumnNotExists($table, $newKeysColumnName);
 
         // drop previous primary column
-        self::dropColumnIfExists($table, $currentKeyColumnName);
+        self::dropExistingColumn($table, $currentKeyColumnName);
 
         // set new primary column
         Schema::table($table, function (Blueprint $blueprint) use (
