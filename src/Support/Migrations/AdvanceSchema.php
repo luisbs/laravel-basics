@@ -79,7 +79,7 @@ class AdvanceSchema extends Schema
         }
 
         // create column as nullable
-        Schema::table($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
+        Schema::table($table, function (Blueprint $table) use ($column, $keyColumn) {
             $table->uuid($column)->after($keyColumn)->nullable(true);
         });
 
@@ -91,7 +91,7 @@ class AdvanceSchema extends Schema
         }
 
         // change the column to non-nullable
-        Schema::table($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
+        Schema::table($table, function (Blueprint $table) use ($column) {
             $table->uuid($column)->nullable(false)->unique()->change();
         });
     }
