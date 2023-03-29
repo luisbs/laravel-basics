@@ -63,6 +63,7 @@ class AdvanceSchema extends Schema
         }
 
         Schema::table($table, function (Blueprint $blueprint) use ($table, $column) {
+            $blueprint->dropUnique([$column]);
             $blueprint->dropIndex([$column]);
             $blueprint->dropColumn($column);
         });
@@ -91,7 +92,7 @@ class AdvanceSchema extends Schema
 
         // change the column to non-nullable
         Schema::table($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
-            $table->uuid($column)->nullable(false)->change();
+            $table->uuid($column)->nullable(false)->unique()->change();
         });
     }
 
