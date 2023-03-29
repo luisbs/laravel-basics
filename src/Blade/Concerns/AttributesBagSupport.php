@@ -22,7 +22,7 @@ class AttributesBagSupport
         }
 
         if ($bag instanceof BaseComponentAttributeBag) {
-            return new ComponentAttributeBag((array) $bag);
+            return new ComponentAttributeBag($bag->getIterator()->getArrayCopy());
         }
 
         return new ComponentAttributeBag(Arr::wrap($bag));
@@ -42,7 +42,7 @@ class AttributesBagSupport
             if ($bag instanceof ComponentAttributeBag) {
                 $attributes = $attributes->merge($bag->getAttributes());
             } else if ($bag instanceof BaseComponentAttributeBag) {
-                $attributes = $attributes->merge((array) $bag);
+                $attributes = $attributes->merge($bag->getIterator()->getArrayCopy());
             } else {
                 $attributes = $attributes->merge(Arr::wrap($bag));
             }
