@@ -26,11 +26,24 @@ class AdvanceSchema extends Schema
         }
     }
 
+    public static function addColumnIfNotExists($table, $column, \Closure $callback): void
+    {
+        if (Schema::hasColumn($table, $column)) {
+            return;
+        }
+
+        Schema::table($table, $callback);
+    }
+
     /**
      * Renames a single column on a table.
      */
-    public static function renameColumn(string $table, string $from, string $to): void
+    public static function renameColumnIfExists(string $table, string $from, string $to): void
     {
+        if (!Schema::hasColumn($table, $from)) {
+            return;
+        }
+
         Schema::table($table, function (Blueprint $blueprint) use ($from, $to) {
             $blueprint->renameColumn($from, $to);
         });
