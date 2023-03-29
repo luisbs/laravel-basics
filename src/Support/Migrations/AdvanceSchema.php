@@ -62,9 +62,9 @@ class AdvanceSchema extends Schema
             return;
         }
 
-        Schema::table($table, function (Blueprint $blueprint) use ($table, $column) {
-            $blueprint->dropUnique([$column]);
-            $blueprint->dropIndex([$column]);
+        Schema::table($table, function (Blueprint $blueprint) use ($column) {
+            // $blueprint->dropUnique([$column]);
+            // $blueprint->dropIndex([$column]);
             $blueprint->dropColumn($column);
         });
     }
