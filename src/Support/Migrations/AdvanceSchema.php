@@ -84,7 +84,7 @@ class AdvanceSchema extends Schema
         });
 
         // add values on the column
-        foreach (DB::table($table) as $entry) {
+        foreach (DB::table($table)->get() as $entry) {
             DB::table($table)
                 ->where($keyColumn, $entry->{$keyColumn})
                 ->update([$column => Str::uuid()->toString()]);
