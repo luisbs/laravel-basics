@@ -75,10 +75,14 @@ class AdvanceSchema extends Schema
      */
     public static function addMissingUuidColumn(string $table, string $column = 'uuid', string $keyColumn = 'id'): void
     {
+        $isNewColumn = !Schema::hasColumn($table, $column);
+
         // create column as nullable
-        self::addMissingColumn($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
-            $table->uuid($column)->after($keyColumn)->nullable(true);
-        });
+        if ($isNewColumn) {
+            self::addMissingColumn($table, $column, function (Blueprint $table) use ($column, $keyColumn) {
+                $table->uuid($column)->after($keyColumn)->nullable(true);
+            });
+        }
 
         // add values on the column
         foreach (DB::table($table)->where($column, null)->get() as $entry) {
@@ -88,9 +92,11 @@ class AdvanceSchema extends Schema
         }
 
         // change the column to non-nullable
-        Schema::table($table, function (Blueprint $table) use ($column) {
-            $table->uuid($column)->nullable(false)->unique()->change();
-        });
+        if ($isNewColumn) {
+            Schema::table($table, function (Blueprint $table) use ($column) {
+                $table->uuid($column)->nullable(false)->unique()->change();
+            });
+        }
     }
 
     /**
