@@ -2,43 +2,36 @@
 
 namespace Basics\Support;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 abstract class ModelService
 {
     /**
      * Underlying instance to work with the service.
-     *
-     * @var \Illuminate\Database\Eloquent\Model
      */
-    protected $instance;
+    protected ?Model $instance;
 
     /**
      * Creates a new service.
-     *
-     * @param \Illuminate\Database\Eloquent\Model  $instance
      */
-    public function __construct($instance)
+    public function __construct(?Model $instance)
     {
         $this->instance = $instance;
     }
 
     /**
      * Creates a new service instance.
-     *
-     * @param \Illuminate\Database\Eloquent\Model  $instance
      */
-    public static function new($instance)
+    public static function make(Model $instance): self
     {
-        return new static($instance);
+        return new self($instance);
     }
 
     /**
      * Set the service underlying instance.
-     *
-     * @param \Illuminate\Database\Eloquent\Model  $instance
      */
-    public function set($instance)
+    public function set(Model $instance): self
     {
         $this->instance = $instance;
         return $this;
@@ -46,10 +39,8 @@ abstract class ModelService
 
     /**
      * Get the service underlying instance.
-     *
-     * @return \Illuminate\Database\Eloquent\Model
      */
-    public function get()
+    public function get(): Model
     {
         return $this->instance;
     }
@@ -57,8 +48,7 @@ abstract class ModelService
     /**
      * Get the identifier of the instance.
      *
-     * @return \Illuminate\Database\Eloquent\Model|null
-     * @throws \Bixopod\Modules\Share\ApiException
+     * @return null|int|string
      */
     public function getKey()
     {
@@ -70,36 +60,28 @@ abstract class ModelService
     /**
      * Get an attribute of the instance.
      *
-     * @param  string  $attribute
-     * @param  mixed   $default
      * @return mixed
      */
-    public function attr($attribute, $default = null)
+    public function attr(string $key, $default = null)
     {
         return $this->isEmpty() //
             ? $default
-            : $this->instance->getAttribute($attribute, $default);
+            : $this->instance->getAttribute($key, $default);
     }
 
     /**
      * Creates a new model instance.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     *
-     * @return \Bixopod\Modules\Share\Support\Service
      */
-    abstract public static function create($request);
+    abstract public static function create(array $attributes): self;
 
     /**
      * Updates the attributes of a model.
-     *
-     * @param \Illuminate\Http\Request  $request
      */
-    public function update($request)
+    public function update(array $attributes): self
     {
         $this->throwIfInstanceIsNull();
 
-        $this->instance->fill($request->all())->save();
+        $this->instance->fill($attributes)->save();
 
         return $this;
     }
@@ -109,13 +91,13 @@ abstract class ModelService
      *
      * @return \Illuminate\Http\Resources\Json\JsonResource
      */
-    public function toResource()
+    public function toResource(): JsonResource
     {
         return new JsonResource($this->instance);
     }
 
     /**
-     * Check if the service has null instance.
+     * Check if the service has a null instance.
      *
      * @return bool
      */
