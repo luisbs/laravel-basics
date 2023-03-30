@@ -2,36 +2,43 @@
 
 namespace Basics\Support;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 abstract class ModelService
 {
     /**
      * Underlying instance to work with the service.
+     *
+     * @var null|\Illuminate\Database\Eloquent\Model
      */
-    protected ?Model $instance;
+    protected $instance;
 
     /**
      * Creates a new service.
+     *
+     * @param  null|\Illuminate\Database\Eloquent\Model  $instance
      */
-    public function __construct(?Model $instance)
+    public function __construct($instance)
     {
         $this->instance = $instance;
     }
 
     /**
      * Creates a new service instance.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $instance
      */
-    public static function make(Model $instance): self
+    public static function make($instance): self
     {
         return new self($instance);
     }
 
     /**
      * Set the service underlying instance.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $instance
      */
-    public function set(Model $instance): self
+    public function set($instance): self
     {
         $this->instance = $instance;
         return $this;
@@ -39,8 +46,10 @@ abstract class ModelService
 
     /**
      * Get the service underlying instance.
+     *
+     * @return \Illuminate\Database\Eloquent\Model
      */
-    public function get(): Model
+    public function get()
     {
         return $this->instance;
     }
