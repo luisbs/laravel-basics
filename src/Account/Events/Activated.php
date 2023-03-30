@@ -11,14 +11,14 @@ class Activated
     /**
      * The activated account.
      *
-     * @var \Bixopod\Modules\Users\Models\User
+     * @var \Basics\Account\Contracts\Activable
      */
     public $account;
 
     /**
      * Create a new event instance.
      *
-     * @param  \Bixopod\Modules\Users\Models\User  $account
+     * @param  \Basics\Account\Contracts\Activable  $account
      * @return void
      */
     public function __construct($account)
