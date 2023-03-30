@@ -18,7 +18,7 @@ trait MixedResponses
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
-    protected static function notifySuccess(string $key, bool $condition, Request $request)
+    protected static function notifySuccessWithKey(string $key, bool $condition, Request $request)
     {
         if ($condition) {
             return $request->wantsJson() //
@@ -29,5 +29,26 @@ trait MixedResponses
         return $request->wantsJson() //
             ? new JsonResponse([], 204)
             : back()->with($key, false);
+    }
+
+    /**
+     * Flash a conditional variable to the session.
+     *
+     * @param  string  $key
+     * @param  bool  $condition
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     */
+    protected static function notifySuccessWithBag(string $key, bool $condition, Request $request)
+    {
+        if ($condition) {
+            return $request->wantsJson() //
+                ? new JsonResponse([], 202)
+                : back()->with('success', $key);
+        }
+
+        return $request->wantsJson() //
+            ? new JsonResponse([], 204)
+            : back()->with('error', $key);
     }
 }
