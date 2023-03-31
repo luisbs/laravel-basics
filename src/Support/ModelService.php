@@ -96,6 +96,16 @@ abstract class ModelService
     }
 
     /**
+     * Destroyes the model and all the related data.
+     */
+    public function destroy(): bool
+    {
+        $this->throwIfInstanceIsNull();
+
+        return $this->instance->delete();
+    }
+
+    /**
      * Returns a valid HTTP resource response.
      *
      * @return \Illuminate\Http\Resources\Json\JsonResource
