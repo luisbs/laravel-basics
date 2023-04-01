@@ -27,8 +27,9 @@ abstract class ModelService
      * Creates a new service instance.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $instance
+     * @return static
      */
-    public static function make($instance): self
+    public static function make($instance)
     {
         return new self($instance);
     }
@@ -37,8 +38,9 @@ abstract class ModelService
      * Set the service underlying instance.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $instance
+     * @return static
      */
-    public function set($instance): self
+    public function set($instance)
     {
         $this->instance = $instance;
         return $this;
@@ -80,13 +82,17 @@ abstract class ModelService
 
     /**
      * Creates a new model instance.
+     *
+     * @return static
      */
-    abstract public static function create(array $attributes): self;
+    abstract public static function create(array $attributes);
 
     /**
      * Updates the attributes of a model.
+     *
+     * @return static
      */
-    public function update(array $attributes): self
+    public function update(array $attributes)
     {
         $this->throwIfInstanceIsNull();
 
@@ -117,10 +123,8 @@ abstract class ModelService
 
     /**
      * Check if the service has a null instance.
-     *
-     * @return bool
      */
-    public function isEmpty()
+    public function isEmpty(): bool
     {
         return is_null($this->instance);
     }
@@ -130,7 +134,7 @@ abstract class ModelService
      *
      * @throws \Exception
      */
-    protected function throwIfInstanceIsNull()
+    protected function throwIfInstanceIsNull(): void
     {
         if ($this->isEmpty()) {
             throw new \Exception('unknown', 404);
