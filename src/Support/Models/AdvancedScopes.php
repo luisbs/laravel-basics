@@ -4,6 +4,13 @@ namespace Basics\Support\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @method \Illuminate\Database\Eloquent\Builder  withModelKey($value, string $column = '<PRIMARY_KEY>')
+ * @method \Illuminate\Database\Eloquent\Builder  whereUnlessNull(string $column, $value = null)
+ * @method \Illuminate\Database\Eloquent\Builder  timespan(array $values, string $column = 'created_at')
+ * @method \Illuminate\Database\Eloquent\Builder  after($value, string $column = 'created_at')
+ * @method \Illuminate\Database\Eloquent\Builder  before($value, string $column = 'created_at')
+ */
 trait AdvancedScopes
 {
     /**
