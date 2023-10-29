@@ -3,6 +3,7 @@
 namespace Basics\Support\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 /**
  * @method \Illuminate\Database\Eloquent\Builder  withModelKey($value, string $column = '<PRIMARY_KEY>')
@@ -126,5 +127,85 @@ trait AdvancedScopes
         }
 
         return $query->where($this->qualifyColumn($column), '<', $value ?? today());
+    }
+
+    /**
+     * Add a join clause to the query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeJoinParent(
+        $query,
+        string $related,
+        ?string $foreignKey,
+        ?string $localKey
+    ) {
+        $parent = static::instantiateModel($related);
+
+        $localKey = $localKey ?: $parent->getKeyName();
+
+        $foreignKey = $foreignKey ?: Str::singular($parent->getTable()) . '_' . $parent->getKeyName();
+
+        return $this->scopeJoinTable($query, $parent, $localKey, $foreignKey);
+    }
+
+    /**
+     * Add a join clause to the query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeJoinChildren(
+        $query,
+        string $related,
+        ?string $foreignKey,
+        ?string $localKey
+    ) {
+        $children = static::instantiateModel($related);
+
+        $foreignKey = $foreignKey ?: Str::singular($this->getTable()) . '_' . $this->getKeyName();
+
+        $localKey = $localKey ?: $this->getKeyName();
+
+        return $this->scopeJoinTable($query, $children, $foreignKey, $localKey);
+    }
+
+    /**
+     * Add a join clause to the query.
+     *
+     * @param  string|\Basics\Support\Models\AdvancedScopes  $related
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeJoinTable(
+        $query,
+        $related,
+        string $firstKey,
+        string $secondKey,
+        string $type = 'inner'
+    ) {
+        if (!($related instanceof AdvancedScopes)) {
+            $related = static::instantiateModel($related);
+        }
+
+        return $query->join(
+            $related->getTable(),
+            $related->qualifyColumn($firstKey),
+            '=',
+            $this->qualifyColumn($secondKey),
+            $type,
+        );
+    }
+
+    protected static function instantiateModel($related): AdvancedScopes
+    {
+        $instance = new $related();
+
+        if ($instance instanceof AdvancedScopes) {
+            return $instance;
+        }
+
+        throw new \Exception("\$related expected to be (trait) StaticMethods");
     }
 }
