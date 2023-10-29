@@ -28,12 +28,12 @@ trait AdvancedScopes
     abstract public function getKeyName();
 
     /**
-     * Prefix the column with the table name to prevent naming conflicts.
+     * Qualify the given column name by the model's table.
+     *
+     * @param  string  $column
+     * @return string
      */
-    protected function prefixColumn(string $column): string
-    {
-        return $this->getTable() . '.' . $column;
-    }
+    abstract public function qualifyColumn($column);
 
     /**
      * Add where filter that accepts a model or a model_key.
@@ -52,7 +52,7 @@ trait AdvancedScopes
             $value = $value->getKey();
         }
 
-        return $query->where($this->prefixColumn($column), $value);
+        return $query->where($this->qualifyColumn($column), $value);
     }
 
     /**
@@ -67,7 +67,7 @@ trait AdvancedScopes
             return $query;
         }
 
-        return $query->where($this->prefixColumn($column), $value);
+        return $query->where($this->qualifyColumn($column), $value);
     }
 
     /**
@@ -93,7 +93,7 @@ trait AdvancedScopes
         }
 
         //? can be seen as: [n, m]
-        return $query->whereBetween($this->prefixColumn($column), $values);
+        return $query->whereBetween($this->qualifyColumn($column), $values);
     }
 
     /**
@@ -109,7 +109,7 @@ trait AdvancedScopes
             return $query;
         }
 
-        return $query->where($this->prefixColumn($column), '>', $value ?? today());
+        return $query->where($this->qualifyColumn($column), '>', $value ?? today());
     }
 
     /**
@@ -125,6 +125,6 @@ trait AdvancedScopes
             return $query;
         }
 
-        return $query->where($this->prefixColumn($column), '<', $value ?? today());
+        return $query->where($this->qualifyColumn($column), '<', $value ?? today());
     }
 }
