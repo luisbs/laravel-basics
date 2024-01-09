@@ -6,78 +6,59 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * @method \Illuminate\Database\Eloquent\Builder  withModelKey($value, string $column = '<PRIMARY_KEY>')
- * @method \Illuminate\Database\Eloquent\Builder  whereUnlessNull(string $column, $value = null)
- * @method \Illuminate\Database\Eloquent\Builder  timespan(array $values, string $column = 'created_at')
- * @method \Illuminate\Database\Eloquent\Builder  after($value, string $column = 'created_at')
- * @method \Illuminate\Database\Eloquent\Builder  before($value, string $column = 'created_at')
+ * @method \Illuminate\Database\Eloquent\Builder  withModelKey($value, ?string $column)
+ * @method \Illuminate\Database\Eloquent\Builder  whereUnlessNull(string $column, ?$value)
+ * @method \Illuminate\Database\Eloquent\Builder  timespan(?array $values, ?string $column)
+ * @method \Illuminate\Database\Eloquent\Builder  after($value, ?string $column)
+ * @method \Illuminate\Database\Eloquent\Builder  before($value, ?string $column)
+ * @method \Illuminate\Database\Eloquent\Builder  joinParent(string $related, ?string $foreignKey, ?string $localKey)
+ * @method \Illuminate\Database\Eloquent\Builder  joinChildren(string $related, ?string $foreignKey, ?string $localKey)
+ * @method \Illuminate\Database\Eloquent\Builder  joinTable($related, string $firstKey, string $secondKey, string $type = 'inner')
  */
 trait AdvancedScopes
 {
     /**
-     * Get the table associated with the model.
-     *
-     * @return string
-     */
-    abstract public function getTable();
-
-    /**
-     * Get the primary key for the model.
-     *
-     * @return string
-     */
-    abstract public function getKeyName();
-
-    /**
-     * Qualify the given column name by the model's table.
-     *
-     * @param  string  $column
-     * @return string
-     */
-    abstract public function qualifyColumn($column);
-
-    /**
      * Add where filter that accepts a model or a model_key.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Database\Eloquent\Model|string|int  $value
-     * @return \Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function scopeWithModelKey($query, $value, string $column = null)
+    protected function scopeWithModelKey($query, $value, ?string $column = null)
     {
         if (is_null($column)) {
-            $column = $this->getKeyName();
+            $column = $query->getModel()->getKeyName();
         }
 
         if ($value instanceof Model) {
             $value = $value->getKey();
         }
 
-        return $query->where($this->qualifyColumn($column), $value);
+        return $query->where($query->qualifyColumn($column), $value);
     }
 
     /**
      * Add where filter unless the value is null.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @return \Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    protected function scopeWhereUnlessNull($query, string $column, $value = null)
+    protected function scopeWhereUnlessNull($query, ?string $column, $value = null)
     {
         if (is_null($value)) {
             return $query;
         }
 
-        return $query->where($this->qualifyColumn($column), $value);
+        return $query->where($query->qualifyColumn($column), $value);
     }
 
     /**
      * Filter model table by date column.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @return \Illuminate\Database\Query\Builder
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeTimespan($query, array $values = null, string $column = 'created_at')
+    public function scopeTimespan($query, ?array $values = null, ?string $column = null)
     {
         if (is_null($values)) {
             return $query;
@@ -93,40 +74,46 @@ trait AdvancedScopes
             return $this->scopeAfter($query, $values[0], $column);
         }
 
+        $column = $column ?: $query->getModel()->getCreatedAtColumn();
+
         //? can be seen as: [n, m]
-        return $query->whereBetween($this->qualifyColumn($column), $values);
+        return $query->whereBetween($query->qualifyColumn($column), $values);
     }
 
     /**
      * Filter models after a date.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Support\Carbon  $value
-     * @return \Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeAfter($query, $value = null, string $column = 'created_at')
+    public function scopeAfter($query, $value = null, ?string $column = null)
     {
         if (is_null($value)) {
             return $query;
         }
 
-        return $query->where($this->qualifyColumn($column), '>', $value ?? today());
+        $column = $column ?: $query->getModel()->getCreatedAtColumn();
+
+        return $query->where($query->qualifyColumn($column), '>', $value ?? today());
     }
 
     /**
      * Filter models before a date.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Support\Carbon  $value
-     * @return \Illuminate\Database\Query\Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeBefore($query, $value = null, string $column = 'created_at')
+    public function scopeBefore($query, $value = null, ?string $column = null)
     {
         if (is_null($value)) {
             return $query;
         }
 
-        return $query->where($this->qualifyColumn($column), '<', $value ?? today());
+        $column = $column ?: $query->getModel()->getCreatedAtColumn();
+
+        return $query->where($query->qualifyColumn($column), '<', $value ?? today());
     }
 
     /**
@@ -138,8 +125,8 @@ trait AdvancedScopes
     public function scopeJoinParent(
         $query,
         string $related,
-        ?string $foreignKey,
-        ?string $localKey
+        ?string $foreignKey = null,
+        ?string $localKey = null
     ) {
         $parent = static::instantiateModel($related);
 
@@ -159,14 +146,16 @@ trait AdvancedScopes
     public function scopeJoinChildren(
         $query,
         string $related,
-        ?string $foreignKey,
-        ?string $localKey
+        ?string $foreignKey = null,
+        ?string $localKey = null
     ) {
+        $parent = $query->getModel();
+
         $children = static::instantiateModel($related);
 
-        $foreignKey = $foreignKey ?: Str::singular($this->getTable()) . '_' . $this->getKeyName();
+        $foreignKey = $foreignKey ?: Str::singular($parent->getTable()) . '_' . $parent->getKeyName();
 
-        $localKey = $localKey ?: $this->getKeyName();
+        $localKey = $localKey ?: $parent->getKeyName();
 
         return $this->scopeJoinTable($query, $children, $foreignKey, $localKey);
     }
@@ -174,7 +163,7 @@ trait AdvancedScopes
     /**
      * Add a join clause to the query.
      *
-     * @param  string|\Basics\Support\Models\AdvancedScopes  $related
+     * @param  string|\Basics\Support\Models\Model  $related
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
@@ -185,27 +174,34 @@ trait AdvancedScopes
         string $secondKey,
         string $type = 'inner'
     ) {
-        if (!($related instanceof AdvancedScopes)) {
-            $related = static::instantiateModel($related);
-        }
+        $related = static::instantiateModel($related);
 
         return $query->join(
             $related->getTable(),
             $related->qualifyColumn($firstKey),
             '=',
-            $this->qualifyColumn($secondKey),
+            $query->qualifyColumn($secondKey),
             $type,
         );
     }
 
-    protected static function instantiateModel($related): AdvancedScopes
+    /**
+     * Creates a new Model instance.
+     *
+     * @param  string|\Basics\Support\Models\Model  $related
+     */
+    protected static function instantiateModel($related): Model
     {
+        if ($related instanceof Model) {
+            return $related;
+        }
+
         $instance = new $related();
 
-        if ($instance instanceof AdvancedScopes) {
+        if ($instance instanceof Model) {
             return $instance;
         }
 
-        throw new \Exception("\$related expected to be (trait) StaticMethods");
+        throw new \Exception("\$related expected to extend AdvancedScopes trait");
     }
 }
