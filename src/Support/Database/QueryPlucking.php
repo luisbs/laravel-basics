@@ -1,68 +1,27 @@
 <?php
 
-namespace Basics\Support\Models;
+namespace Basics\Support\Database;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
-class QueryCounting
+trait QueryPlucking
 {
     /**
-     * Base query to execute.
+     * Get a disposable instance of the query.
+     *
+     * @return  null|\Illuminate\Database\Query\Builder  the class where the methods exists.
      */
-    protected ?Builder $query;
+    abstract protected function getQuery(): ?\Illuminate\Database\Eloquent\Builder;
 
     /**
      * Direction to use on grouped methods.
      */
-    protected string $orderDirection;
+    protected string $orderDirection = 'DESC';
 
     /**
      * Column name to use on Date related methods.
      */
-    protected string $createdAtColumn;
-
-    /**
-     * Create a new instance of the Query wrapper.
-     */
-    public function __construct(
-        ?Builder $query = null,
-        string $orderDirection = 'DESC',
-        string $createdAtColumn = null
-    ) {
-        $model = $query->getModel();
-
-        $this->query = $query;
-        $this->orderDirection = $orderDirection;
-        $this->createdAtColumn = $this->query->qualifyColumn(
-            $createdAtColumn ?? $model->getCreatedAtColumn() ?? 'created_at'
-        );
-    }
-
-    /**
-     * Instantiate a new wrapper.
-     */
-    public static function make(
-        ?Builder $query = null,
-        string $orderDirection = 'DESC',
-        string $createdAtColumn = null
-    ): QueryCounting {
-        return new static($query, $orderDirection, $createdAtColumn);
-    }
-
-    /**
-     * Counting globally.
-     *
-     * @return int the count method result.
-     */
-    public function count(): int
-    {
-        if (is_null($this->query)) {
-            return 0;
-        }
-
-        return $this->query->count();
-    }
+    protected string $createdAtColumn = 'created_at';
 
     /**
      * Count by **year**.
@@ -138,7 +97,7 @@ class QueryCounting
      * Count groups using a formated date.
      * @see https://www.w3schools.com/sql/func_mysql_date_format.asp
      *
-     * @return \Illuminate\Support\Collection example `['0' => 13]` where `Sunday=0` and `Saturday=6`.
+     * @return \Illuminate\Support\Collection
      */
     public function pluckByDateFormat(string $format): Collection
     {
@@ -152,17 +111,17 @@ class QueryCounting
      */
     public function pluckBy(string $labelFn): Collection
     {
-        if (is_null($this->query)) {
-            return Collection::make();
+        if (!is_null($query = $this->getQuery())) {
+            // SELECT COUNT(*) AS total, <label-function> AS label
+            // FROM <tablename>
+            // GROUP BY label
+            // ORDER BY label DESC
+            return $query->selectRaw("COUNT(*) AS total, $labelFn AS label")
+                ->groupBy('label')
+                ->orderBy('label', $this->orderDirection)
+                ->pluck('total', 'label');
         }
 
-        // SELECT COUNT(*) AS total, <label-function> AS label
-        // FROM <tablename>
-        // GROUP BY label
-        // ORDER BY label DESC
-        return $this->query->selectRaw("COUNT(*) AS total, $labelFn AS label")
-            ->groupBy('label')
-            ->orderBy('label', 'DESC')
-            ->pluck('total', 'label');
+        return Collection::make();
     }
 }
