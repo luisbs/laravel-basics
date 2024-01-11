@@ -1,6 +1,6 @@
 <?php
 
-namespace Basics\Support\Models;
+namespace Basics\Support\Database;
 
 use Illuminate\Support\Arr;
 
