@@ -126,15 +126,16 @@ trait AdvancedScopes
         $query,
         string $related,
         ?string $foreignKey = null,
-        ?string $localKey = null
+        ?string $localKey = null,
+        ?string $alias
     ) {
         $parent = static::instantiateModel($related);
 
+        $alias = $alias ?: $parent->getTable();
         $localKey = $localKey ?: $parent->getKeyName();
+        $foreignKey = $foreignKey ?: Str::singular($alias) . '_' . $parent->getKeyName();
 
-        $foreignKey = $foreignKey ?: Str::singular($parent->getTable()) . '_' . $parent->getKeyName();
-
-        return $this->scopeJoinTable($query, $parent, $localKey, $foreignKey);
+        return $this->scopeJoinTable($query, $parent, $localKey, $foreignKey, $alias);
     }
 
     /**
@@ -147,17 +148,17 @@ trait AdvancedScopes
         $query,
         string $related,
         ?string $foreignKey = null,
-        ?string $localKey = null
+        ?string $localKey = null,
+        ?string $alias
     ) {
+        $children = static::instantiateModel($related);
         $parent = $query->getModel();
 
-        $children = static::instantiateModel($related);
-
-        $foreignKey = $foreignKey ?: Str::singular($parent->getTable()) . '_' . $parent->getKeyName();
-
+        $alias = $alias ?: $parent->getTable();
         $localKey = $localKey ?: $parent->getKeyName();
+        $foreignKey = $foreignKey ?: Str::singular($alias) . '_' . $parent->getKeyName();
 
-        return $this->scopeJoinTable($query, $children, $foreignKey, $localKey);
+        return $this->scopeJoinTable($query, $children, $foreignKey, $localKey, $alias);
     }
 
     /**
@@ -172,12 +173,13 @@ trait AdvancedScopes
         $related,
         string $firstKey,
         string $secondKey,
+        string $alias,
         string $type = 'inner'
     ) {
         $related = static::instantiateModel($related);
 
         return $query->join(
-            $related->getTable(),
+            $related->getTable() . ($alias ? ' as '. $alias : ''),
             $related->qualifyColumn($firstKey),
             '=',
             $query->qualifyColumn($secondKey),
