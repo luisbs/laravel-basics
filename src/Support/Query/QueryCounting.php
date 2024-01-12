@@ -1,6 +1,6 @@
 <?php
 
-namespace Basics\Support\Database;
+namespace Basics\Support\Query;
 
 use Illuminate\Support\Arr;
 
@@ -11,11 +11,14 @@ use Illuminate\Support\Arr;
 trait QueryCounting
 {
     /**
-     * Get a disposable instance of the query.
-     *
-     * @return  null|\Illuminate\Database\Query\Builder  the class where the methods exists.
+     * Check if the instance has a valid `$query` object
      */
-    abstract protected function getQuery(): ?\Illuminate\Database\Eloquent\Builder;
+    abstract protected function hasQuery(): bool;
+
+    /**
+     * Get a disposable instance of the query.
+     */
+    abstract protected function getQuery(): ?\Illuminate\Database\Query\Builder;
 
     /**
      * Retrieve a count of the number of rows requested.
@@ -79,11 +82,11 @@ trait QueryCounting
      */
     public function aggregate(string $function, $columns = ['*']): mixed
     {
-        if (!is_null($query = $this->getQuery())) {
-            return $query->aggregate($function, $columns);
+        if (!$this->hasQuery()) {
+            return NULL;
         }
 
-        return NULL;
+        return $this->getQuery()->aggregate($function, $columns);
     }
 
     /**
@@ -94,10 +97,10 @@ trait QueryCounting
      */
     public function numericAggregate(string $function, $columns = ['*']): mixed
     {
-        if (!is_null($query = $this->getQuery())) {
-            return $query->numericAggregate($function, $columns);
+        if (!$this->hasQuery()) {
+            return 0;
         }
 
-        return 0;
+        return $this->getQuery()->numericAggregate($function, $columns);
     }
 }
