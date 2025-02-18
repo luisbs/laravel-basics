@@ -32,24 +32,30 @@ trait QueryCounting
 
     /**
      * Retrieve the minimum value of a given column.
+     *
+     * @return mixed
      */
-    public function min(string $column): mixed
+    public function min(string $column)
     {
         return $this->aggregate(__FUNCTION__, [$column]);
     }
 
     /**
      * Retrieve the maximum value of a given column.
+     *
+     * @return mixed
      */
-    public function max(string $column): mixed
+    public function max(string $column)
     {
         return $this->aggregate(__FUNCTION__, [$column]);
     }
 
     /**
      * Retrieve the sum of the values of a given column.
+     *
+     * @return mixed
      */
-    public function sum(string $column): mixed
+    public function sum(string $column)
     {
         $result = $this->aggregate(__FUNCTION__, [$column]);
 
@@ -58,16 +64,20 @@ trait QueryCounting
 
     /**
      * Retrieve the average of the values of a given column.
+     *
+     * @return mixed
      */
-    public function avg(string $column): mixed
+    public function avg(string $column)
     {
         return $this->aggregate(__FUNCTION__, [$column]);
     }
 
     /**
      * Alias for the "avg" method.
+     *
+     * @return mixed
      */
-    public function average(string $column): mixed
+    public function average(string $column)
     {
         return $this->avg($column);
     }
@@ -81,8 +91,10 @@ trait QueryCounting
      * @see https://dev.mysql.com/doc/refman/8.0/en/aggregate-functions.html
      * @see https://www.postgresql.org/docs/9.5/functions-aggregate.html
      * @see https://learn.microsoft.com/en-us/sql/t-sql/functions/aggregate-functions-transact-sql
+     *
+     * @return mixed
      */
-    public function aggregate(string $function, $columns = ['*']): mixed
+    public function aggregate(string $function, $columns = ['*'])
     {
         if (!$this->hasQuery()) {
             return NULL;
@@ -96,8 +108,10 @@ trait QueryCounting
      *
      * @param  string|array  $columns
      * @return int|float
+     *
+     * @return mixed
      */
-    public function numericAggregate(string $function, $columns = ['*']): mixed
+    public function numericAggregate(string $function, $columns = ['*'])
     {
         if (!$this->hasQuery()) {
             return 0;
