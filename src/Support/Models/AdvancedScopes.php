@@ -6,23 +6,31 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * @method \Illuminate\Database\Eloquent\Builder  withModelKey($value, ?string $column)
- * @method \Illuminate\Database\Eloquent\Builder  whereUnlessNull(string $column, ?$value)
- * @method \Illuminate\Database\Eloquent\Builder  timespan(?array $values, ?string $column)
- * @method \Illuminate\Database\Eloquent\Builder  after($value, ?string $column)
- * @method \Illuminate\Database\Eloquent\Builder  before($value, ?string $column)
- * @method \Illuminate\Database\Eloquent\Builder  joinParent(string $related, ?string $foreignKey, ?string $localKey)
- * @method \Illuminate\Database\Eloquent\Builder  joinChildren(string $related, ?string $foreignKey, ?string $localKey)
- * @method \Illuminate\Database\Eloquent\Builder  joinTable($related, string $firstKey, string $secondKey, string $type = 'inner')
+ * @method \Illuminate\Database\Query\Builder  withModelKey($value, ?string $column)
+ * @method \Illuminate\Database\Query\Builder  whereUnlessNull(string $column, ?$value)
+ * @method \Illuminate\Database\Query\Builder  timespan(?array $values, ?string $column)
+ * @method \Illuminate\Database\Query\Builder  after($value, ?string $column)
+ * @method \Illuminate\Database\Query\Builder  before($value, ?string $column)
+ * @method \Illuminate\Database\Query\Builder  joinParent(string $related, ?string $foreignKey, ?string $localKey)
+ * @method \Illuminate\Database\Query\Builder  joinChildren(string $related, ?string $foreignKey, ?string $localKey)
+ * @method \Illuminate\Database\Query\Builder  joinTable($related, string $firstKey, string $secondKey, string $type = 'inner')
  */
 trait AdvancedScopes
 {
     /**
+     * Qualify the given column name by the model's table.
+     *
+     * @param  string  $column
+     * @return string
+     */
+    public abstract function qualifyColumn($column);
+
+    /**
      * Add where filter that accepts a model or a model_key.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  \Illuminate\Database\Eloquent\Model|string|int  $value
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return \Illuminate\Database\Query\Builder
      */
     protected function scopeWithModelKey($query, $value, ?string $column = null)
     {
@@ -34,14 +42,14 @@ trait AdvancedScopes
             $value = $value->getKey();
         }
 
-        return $query->where($query->qualifyColumn($column), $value);
+        return $query->where($this->qualifyColumn($column), $value);
     }
 
     /**
      * Add where filter unless the value is null.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return \Illuminate\Database\Query\Builder
      */
     protected function scopeWhereUnlessNull($query, ?string $column, $value = null)
     {
@@ -49,14 +57,14 @@ trait AdvancedScopes
             return $query;
         }
 
-        return $query->where($query->qualifyColumn($column), $value);
+        return $query->where($this->qualifyColumn($column), $value);
     }
 
     /**
      * Filter model table by date column.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return \Illuminate\Database\Query\Builder
      */
     public function scopeTimespan($query, ?array $values = null, ?string $column = null)
     {
@@ -77,15 +85,15 @@ trait AdvancedScopes
         $column = $column ?: $query->getModel()->getCreatedAtColumn();
 
         //? can be seen as: [n, m]
-        return $query->whereBetween($query->qualifyColumn($column), $values);
+        return $query->whereBetween($this->qualifyColumn($column), $values);
     }
 
     /**
      * Filter models after a date.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  \Illuminate\Support\Carbon  $value
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return \Illuminate\Database\Query\Builder
      */
     public function scopeAfter($query, $value = null, ?string $column = null)
     {
@@ -95,15 +103,15 @@ trait AdvancedScopes
 
         $column = $column ?: $query->getModel()->getCreatedAtColumn();
 
-        return $query->where($query->qualifyColumn($column), '>', $value ?? today());
+        return $query->where($this->qualifyColumn($column), '>', $value ?? today());
     }
 
     /**
      * Filter models before a date.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Database\Query\Builder  $query
      * @param  \Illuminate\Support\Carbon  $value
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return \Illuminate\Database\Query\Builder
      */
     public function scopeBefore($query, $value = null, ?string $column = null)
     {
@@ -113,14 +121,14 @@ trait AdvancedScopes
 
         $column = $column ?: $query->getModel()->getCreatedAtColumn();
 
-        return $query->where($query->qualifyColumn($column), '<', $value ?? today());
+        return $query->where($this->qualifyColumn($column), '<', $value ?? today());
     }
 
     /**
      * Add a join clause to the query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return \Illuminate\Database\Query\Builder
      */
     public function scopeJoinParent(
         $query,
@@ -141,8 +149,8 @@ trait AdvancedScopes
     /**
      * Add a join clause to the query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return \Illuminate\Database\Query\Builder
      */
     public function scopeJoinChildren(
         $query,
@@ -165,8 +173,8 @@ trait AdvancedScopes
      * Add a join clause to the query.
      *
      * @param  string|\Basics\Support\Models\Model  $related
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return \Illuminate\Database\Query\Builder
      */
     public function scopeJoinTable(
         $query,
@@ -182,7 +190,7 @@ trait AdvancedScopes
             $related->getTable() . ($alias ? ' as '. $alias : ''),
             $related->qualifyColumn($firstKey),
             '=',
-            $query->qualifyColumn($secondKey),
+            $this->qualifyColumn($secondKey),
             $type,
         );
     }

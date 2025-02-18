@@ -22,10 +22,11 @@ class QueryAggregator
     public function __construct(
         $query,
         string $orderDirection = 'DESC',
-        string $createdAtColumn = null
+        string $dateColumn = null
     ) {
         if ($query instanceof \Illuminate\Database\Eloquent\Builder) {
-            $createdAtColumn = $createdAtColumn ?? $query->getModel()->getCreatedAtColumn();
+            $model = $query->getModel();
+            $dateColumn = $model->qualifyColumn($dateColumn ?? $model->getCreatedAtColumn() ?? 'created_at');
             $query = $query->getQuery();
         }
 
@@ -34,8 +35,8 @@ class QueryAggregator
         }
 
         $this->query = $query;
+        $this->dateColumn = $dateColumn;
         $this->orderDirection = $orderDirection;
-        $this->createdAtColumn = $query->qualifyColumn($createdAtColumn ?? 'created_at');
     }
 
     /**
@@ -46,9 +47,9 @@ class QueryAggregator
     public static function make(
         $query,
         string $orderDirection = 'DESC',
-        string $createdAtColumn = null
+        string $dateColumn = null
     ): QueryAggregator {
-        return new static($query, $orderDirection, $createdAtColumn);
+        return new static($query, $orderDirection, $dateColumn);
     }
 
     /**

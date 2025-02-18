@@ -52,6 +52,8 @@ trait QueryCounting
     public function sum(string $column): mixed
     {
         $result = $this->aggregate(__FUNCTION__, [$column]);
+
+        return $result ?: 0;
     }
 
     /**

@@ -24,10 +24,10 @@ trait QueryPlucking
     /**
      * Column name to use on Date related methods.
      */
-    protected string $createdAtColumn = 'created_at';
+    protected string $dateColumn = 'created_at';
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **year**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **year**.
      *
      * @return \Illuminate\Support\Collection example `['2015' => 13]` from `'2015-07-23'`.
      */
@@ -37,7 +37,7 @@ trait QueryPlucking
     }
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **year-month**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **year-month**.
      *
      * @return \Illuminate\Support\Collection example `['2015-07' => 13]` from `'2015-07-23'`.
      */
@@ -47,7 +47,7 @@ trait QueryPlucking
     }
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **year-month-day**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **year-month-day**.
      *
      * @return \Illuminate\Support\Collection example `['2015-07-23' => 13]` from `'2015-07-23'`.
      */
@@ -57,7 +57,7 @@ trait QueryPlucking
     }
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **month**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **month**.
      *
      * @return \Illuminate\Support\Collection example `['07' => 13]` from `'2015-07-23'`.
      */
@@ -67,7 +67,7 @@ trait QueryPlucking
     }
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **month-day**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **month-day**.
      *
      * @return \Illuminate\Support\Collection example `['07-23' => 13]` from `'2015-07-23'`.
      */
@@ -77,7 +77,7 @@ trait QueryPlucking
     }
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **day**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **day**.
      *
      * @return \Illuminate\Support\Collection example `['23' => 13]` from `'2015-07-23'`.
      */
@@ -87,7 +87,7 @@ trait QueryPlucking
     }
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **weekday**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **weekday**.
      *
      * @return \Illuminate\Support\Collection example `['0' => 13]` where `Sunday=0` and `Saturday=6`.
      */
@@ -97,14 +97,14 @@ trait QueryPlucking
     }
 
     /**
-     * Retrieve an array counting groups of records _createdAt_ by **$format**.
+     * Retrieve an array of records aggregated on _dateColumn_ by **$format**.
      * @see https://www.w3schools.com/sql/func_mysql_date_format.asp
      *
      * @return \Illuminate\Support\Collection
      */
     public function pluckByDateFormat(string $format, string $aggregator = 'count(*)'): Collection
     {
-        return $this->pluckBy('DATE_FORMAT('. $this->createdAtColumn .', \''. $format .'\')', $aggregator);
+        return $this->pluckBy('DATE_FORMAT('. $this->dateColumn .', \''. $format .'\')', $aggregator);
     }
 
     /**
